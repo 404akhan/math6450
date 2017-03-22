@@ -25,12 +25,6 @@ ys[:, 0] = df['dec_o']
 xs[np.isnan(xs)] = 0.
 ys[np.isnan(ys)] = 0.
 
-for i in range(attribute_num):
-    d1 = xs[: ,i]
-    d2 = ys[: ,0]
-    print input_vars[i], np.corrcoef(d1, d2)[0][1]
-sys.exit()
-
 random.seed(1339)
 shuf_arr = range(0, 8378)
 random.shuffle(shuf_arr)
