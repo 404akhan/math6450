@@ -22,8 +22,7 @@ for i in range(attribute_num):
     xs[:, i] = df[input_vars[i]]
 ys[:, 0] = df['dec_o']
 
-xs[np.isnan(xs)] = 0.
-ys[np.isnan(ys)] = 0.
+xs[np.isnan(xs)] = 6.
 
 random.seed(1339)
 shuf_arr = range(0, 8378)
