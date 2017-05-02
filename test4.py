@@ -1,0 +1,131 @@
+"""
+for i in range(attribute_num):
+    d1 = xs[: ,i]
+    d2 = ys[: ,0]
+    print input_vars[i], np.corrcoef(d1, d2)[0][1]
+sys.exit()
+"""
+import numpy as np
+import pandas as pd
+import random
+import statsmodels.api as sm
+from sklearn.feature_selection import RFE
+from sklearn.svm import SVC
+import sys
+from pylab import pcolor, show, colorbar, xticks, yticks
+import operator
+import cPickle as pickle
+
+df = pd.read_csv("./speed_code.csv", encoding="ISO-8859-1")
+target = np.zeros((8378, 1))
+target[:, 0] = df['dec_o']
+target[np.isnan(target)] = 0.
+
+input_vars = []
+
+dict = {}
+for k in df.keys():
+    arr = np.array(df[k])
+    if type(arr[0]) != np.unicode and k != 'undergra' and k != 'mn_sat' and k != 'tuition' \
+            and k != 'dec_o' and k != 'dec' and k != 'match' and k != 'prob' \
+            and k != 'prob_o' and k != 'id' and k != 'idg' and k != 'them_cal':
+        arr[np.isnan(arr)] = 0.
+        dict[k] = np.corrcoef(arr, target[: ,0])[0][1]
+        print k
+        input_vars.append(k)
+
+pickle.dump(input_vars, open('input_vars_removed.p', 'wb'))
+sys.exit()
+
+sorted_x = sorted(dict.items(), key=operator.itemgetter(1))
+sorted_x = np.array(sorted_x)
+
+print sorted_x[-25:-2, 0]
+
+input_vars = np.array(['aaaaaaaaaaaaa' for _ in range(40)])
+input_vars[:23] = sorted_x[-25:-2, 0]
+input_vars[23:] = sorted_x[:17, 0]
+print input_vars
+
+attribute_num = len(input_vars)
+print 'attribute_num', attribute_num
+
+xs = np.zeros((8378, attribute_num))
+ys = np.zeros((8378, 1))
+
+for i in range(attribute_num):
+    xs[:, i] = df[input_vars[i]]
+ys[:, 0] = df['dec_o']
+
+xs[np.isnan(xs)] = 0.
+ys[np.isnan(ys)] = 0.
+
+sys.exit()
+####################
+random.seed(1339)
+shuf_arr = range(0, 8378)
+random.shuffle(shuf_arr)
+train_size = int(8378 * 0.7)
+lr = 0.1
+
+xs_train = xs[shuf_arr[0:train_size], :]
+xs_cross_val = xs[shuf_arr[train_size:], :]
+ys_train = ys[shuf_arr[0:train_size], :]
+ys_cross_val = ys[shuf_arr[train_size:], :]
+
+xs_mean = np.mean(xs_train, axis=0)
+xs_std = np.std(xs_train, axis=0)
+
+xs_train = (xs_train - xs_mean) / xs_std
+xs_cross_val = (xs_cross_val - xs_mean) / xs_std
+
+def sigmoid(x):
+    return 1. / (1 + np.exp(-x))
+
+def get_loss():
+    scores = np.matmul(xs_cross_val, W) + b
+    predict = sigmoid(scores)
+
+    error = predict - ys_cross_val
+    return np.mean(np.square(error))
+
+def get_accuracy():
+    scores = np.matmul(xs_cross_val, W) + b
+    predict = sigmoid(scores)
+    predict = (predict > 0.5).astype(np.int)
+
+    error = predict - ys_cross_val
+    return np.mean(np.abs(error))
+
+def get_train_loss():
+    scores = np.matmul(xs_train, W) + b
+    predict = sigmoid(scores)
+
+    error = predict - ys_train
+    return np.mean(np.square(error))
+
+def get_train_accuracy():
+    scores = np.matmul(xs_train, W) + b
+    predict = sigmoid(scores)
+    predict = (predict > 0.5).astype(np.int)
+
+    error = predict - ys_train
+    return np.mean(np.abs(error))
+
+W = 0.01 * np.random.randn(attribute_num, 1)
+b = 0.
+
+for i in range(100*1000):
+    scores = np.matmul(xs_train, W) + b
+    predict = sigmoid(scores)
+
+    dpredict = 1. / train_size * (predict - ys_train)
+    dscores = dpredict * predict * (1 - predict)
+    dW = np.matmul(xs_train.transpose(), dscores)
+    db = np.sum(dscores)
+
+    W -= lr * dW
+    b -= lr * db
+
+    if i % 10 == 0:
+        print 'iter: %d, loss: %f, acc: %f, tr loss: %f, tr acc: %f' % (i, get_loss(), get_accuracy(), get_train_loss(), get_train_accuracy())

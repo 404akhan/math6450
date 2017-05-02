@@ -9,22 +9,21 @@ from sklearn.datasets import make_classification
 import cPickle as pickle
 
 df = pd.read_csv("./speed_code.csv", encoding="ISO-8859-1")
-input_vars = np.array(['attr', 'sinc', 'intel', 'fun', 'amb', 'shar', 'like', 'prob',
-                       'attr_o', 'sinc_o', 'intel_o', 'fun_o', 'amb_o', 'shar_o', 'like_o', 'prob_o'])
 
-input_vars = pickle.load(open('input_vars_miss1000.p', 'rb'))
+input_vars = pickle.load(open('input_vars_removed.p', 'rb'))
+predict_col = 'dec_o'
 
-# input_vars = input_vars[:20]
+# input_vars = input_vars[:10]
 
 attribute_num = len(input_vars)
-print 'attribute_num', attribute_num
+print 'attribute_num', attribute_num, 'predict', predict_col
 
 xs = np.zeros((8378, attribute_num))
 ys = np.zeros((8378, 1))
 
 for i in range(attribute_num):
     xs[:, i] = df[input_vars[i]]
-ys[:, 0] = df['match']
+ys[:, 0] = df[predict_col]
 
 xs[np.isnan(xs)] = 0.
 ys = np.reshape(ys, len(ys))
@@ -41,11 +40,12 @@ print("Optimal number of features : %d" % rfecv.n_features_)
 print selector.support_
 print selector.ranking_
 
-pickle.dump(selector.support_, open('important1match_miss1000-z.p', 'wb'))
-pickle.dump(selector.ranking_, open('important2match_miss1000-z.p', 'wb'))
+pickle.dump(selector.support_, open(predict_col+'important1removed.p', 'wb'))
+pickle.dump(selector.ranking_, open(predict_col+'important2removed.p', 'wb'))
+pickle.dump(rfecv.grid_scores_, open(predict_col+'grid_scores_removed.p', 'wb'))
 
 plt.figure()
-plt.xlabel("Number of features selected")
+plt.xlabel(predict_col+": Number of features selected")
 plt.ylabel("Cross validation score (nb of correct classifications)")
 plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_)
 plt.show()

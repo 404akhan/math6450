@@ -6,11 +6,17 @@ from sklearn.feature_selection import RFE
 from sklearn.svm import SVC
 import sys
 from pylab import pcolor, show, colorbar, xticks, yticks
+import cPickle as pickle
+from sklearn.model_selection import train_test_split
 
 df = pd.read_csv("./speed_code.csv", encoding="ISO-8859-1")
 input_vars = np.array(['attr', 'sinc', 'intel', 'fun', 'amb', 'shar', 'like', 'prob',
                        'attr_o', 'sinc_o', 'intel_o', 'fun_o', 'amb_o', 'shar_o', 'like_o', 'prob_o',
                        'samerace'])
+
+input_vars = np.array([u'condtn', u'round', u'samerace', u'attr_o', u'sinc_o', u'fun_o', u'amb_o',
+                       u'like_o', u'prob_o', u'met_o', u'date', u'go_out', u'museums', u'art',
+                       u'amb3_1', u'attr', u'fun', u'amb', u'like', u'prob'])
 
 attribute_num = len(input_vars)
 print 'attribute_num', attribute_num
@@ -20,26 +26,15 @@ ys = np.zeros((8378, 1))
 
 for i in range(attribute_num):
     xs[:, i] = df[input_vars[i]]
-ys[:, 0] = df['dec_o']
+ys[:, 0] = df['match']
 
-xs[np.isnan(xs)] = 6.
+xs[np.isnan(xs)] = 0.
 
-random.seed(1339)
-shuf_arr = range(0, 8378)
-random.shuffle(shuf_arr)
-train_size = int(8378 * 0.7)
-lr = 0.1
+xs_train, xs_cross_val, ys_train, ys_cross_val = train_test_split(
+    xs, ys, test_size=0.33, random_state=42)
 
-xs_train = xs[shuf_arr[0:train_size], :]
-xs_cross_val = xs[shuf_arr[train_size:], :]
-ys_train = ys[shuf_arr[0:train_size], :]
-ys_cross_val = ys[shuf_arr[train_size:], :]
-
-xs_mean = np.mean(xs_train, axis=0)
-xs_std = np.std(xs_train, axis=0)
-
-xs_train = (xs_train - xs_mean) / xs_std
-xs_cross_val = (xs_cross_val - xs_mean) / xs_std
+train_size = xs_train.shape[0]
+lr = 0.01
 
 def sigmoid(x):
     return 1. / (1 + np.exp(-x))

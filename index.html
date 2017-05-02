@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <h2>23 variables</h2>
+    <!--<p>We are using same 23 variables for predicting 'match', 'dec', 'dec_o'</p>-->
+    <p>(!) Best result for Match is better with recursive varaible selection, than using intuitively related once</p>
+    <!--<p>(!) Ensemble of methods outperforms all in predicting 'dec'</p>-->
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Predict Column</th>
+        <th>QuadraticDiscriminantAnalysis</th>
+        <th>LogisticRegression</th>
+        <th>LinearDiscriminantAnalysis</th>
+        <th>SVC</th>
+        <th>Ensemble</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>match</td>
+        <td>82.86%</td>
+        <td>85.71%</td>
+        <td>85.24%</td>
+        <td>86.08%</td>
+        <td>85.97%</td>
+      </tr>
+      <!--<tr>-->
+        <!--<td>dec_o</td>-->
+        <!--<td>0.272332730561</td>-->
+        <!--<td>0.228933092224</td>-->
+        <!--<td>0.232549728752</td>-->
+        <!--<td>0.244846292948</td>-->
+        <!--<td>0.233634719711</td>-->
+      <!--</tr>-->
+      <!--<tr>-->
+        <!--<td>dec</td>-->
+        <!--<td>0.246292947559</td>-->
+        <!--<td>0.228933092224</td>-->
+        <!--<td>0.228209764919</td>-->
+        <!--<td>0.220976491863</td>-->
+        <!--<td>0.219891500904</td>-->
+      <!--</tr>-->
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

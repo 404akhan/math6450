@@ -1,0 +1,6 @@
+model_name,dec,dec_o,match
+QuadraticDiscriminantAnalysis,74.29%,74.97%,82.46%
+LogisticRegression,75.26%,77.14%,85.24%
+LinearDiscriminantAnalysis,75.15%,76.93%,84.45%
+SVC,75.52%,76.67%,84.81%
+Ensemble,75.59%,77.11%,85.17%

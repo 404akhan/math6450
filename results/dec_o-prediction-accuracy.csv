@@ -1,0 +1,5 @@
+QuadraticDiscriminantAnalysis,72.12%
+LogisticRegression,77.25%
+LinearDiscriminantAnalysis,77.07%
+SVC,76.31%
+Ensemble,77.07%

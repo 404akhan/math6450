@@ -11,7 +11,7 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 df = pd.read_csv("./speed_code.csv", encoding="ISO-8859-1")
 input_vars = np.array(['attr', 'sinc', 'intel', 'fun', 'amb', 'shar', 'like', 'prob',
-                       'attr_o', 'sinc_o', 'intel_o', 'fun_o', 'amb_o', 'shar_o', 'like_o', 'prob_o', 'gender'])
+                       'attr_o', 'sinc_o', 'intel_o', 'fun_o', 'amb_o', 'shar_o', 'like_o', 'prob_o', 'met'])
 
 attribute_num = len(input_vars)
 print 'attribute_num', attribute_num
@@ -23,10 +23,10 @@ for i in range(attribute_num):
 count_0, count_1 = 0, 0
 arr_0, arr_1 = [], []
 for i in range(XS.shape[0]):
-    if XS[i, 16] == 0:
+    if XS[i, 16] == 1:
         count_0 += 1
         arr_0.append(i)
-    if XS[i, 16] == 1:
+    else:
         count_1 += 1
         arr_1.append(i)
 print count_0, count_1

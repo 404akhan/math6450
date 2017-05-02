@@ -1,39 +1,102 @@
 import numpy as np
 import pandas as pd
 import random
-import statsmodels.api as sm
-from sklearn.feature_selection import RFE
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 import cPickle as pickle
+import csv
 
-xs_fields = np.array(['attr', 'sinc', 'intel', 'fun', 'amb', 'shar', 'like', 'prob',
-                        'attr_o', 'sinc_o', 'intel_o', 'fun_o', 'amb_o', 'shar_o', 'like_o', 'prob_o', 'samerace',
-                        "sports","tvsports","exercise","dining","museums","art","hiking","gaming",
-                        "clubbing","reading","tv","theater","movies","concerts","music","shopping","yoga",
-                        "sports_o","tvsports_o","exercise_o","dining_o","museums_o","art_o","hiking_o","gaming_o",
-                        "clubbing_o","reading_o","tv_o","theater_o","movies_o","concerts_o","music_o","shopping_o","yoga_o",
-                      ])
+df = pd.read_csv("./speed_code.csv", encoding="ISO-8859-1")
+predict_col = 'match'
+rem1 = pickle.load(open(predict_col+'important1match_miss1000.p', 'rb'))
+input_vars = pickle.load(open('input_vars_miss1000.p', 'rb'))
+input_vars = np.array(input_vars[rem1])
+remm = []
+for i in input_vars:
+    remm.append(i)
+input_vars
+attribute_num = len(input_vars)-2
+print 'attribute_num', attribute_num, 'predict', predict_col
 
-get_diff =  np.array(["sports","tvsports","exercise","dining","museums","art","hiking","gaming",
-                        "clubbing","reading","tv","theater","movies","concerts","music","shopping","yoga"])
+xs = np.zeros((8378, attribute_num))
+ys = np.zeros((8378, 1))
 
-xs = pickle.load(open('new_xs.p'))
+for i in range(attribute_num):
+    if input_vars[i] != 'prob' and input_vars[i] != 'prob_o':
+        xs[:, i] = df[input_vars[i]]
+ys[:, 0] = df[predict_col]
 
-new_xs = np.zeros((xs.shape[0], xs.shape[1]-len(get_diff)))
+xs[np.isnan(xs)] = 0.
+ys = np.reshape(ys, len(ys))
 
-print xs
-print xs.shape[1] == len(xs_fields)
+X_train, X_test, y_train, y_test = train_test_split(
+    xs, ys, test_size=0.33, random_state=42)
 
-for i in range(xs.shape[1] - len(get_diff)):
-    if i < xs.shape[1] - 2*len(get_diff):
-        new_xs[:, i] = xs[:, i]
-    else:
-        # new_xs[:, i] = np.exp(-np.square(xs[:, i] - xs[:, i + len(get_diff)])/2)
-        new_xs[:, i] = 1./( np.square(xs[:, i] - xs[:, i + len(get_diff)]) +1e-5)
+xs_mean = np.mean(X_train, axis=0)
+xs_std = np.std(X_train, axis=0)
 
-print new_xs.shape
-print new_xs
+X_train = (X_train - xs_mean) / xs_std
+X_test = (X_test - xs_mean) / xs_std
 
-pickle.dump(new_xs, open('lala.p', 'wb'))
+second_row = []
 
+rem4 = None
 
+def apply_model(clf):
+    global second_row, rem4
+    clf.fit(X_train, y_train)
+
+    predict = clf.predict(X_test)
+    print predict
+    error = np.mean(np.square(predict - y_test))
+    print '%.2f%%' % ((1 - error) * 100)
+    second_row.append('%.2f%%' % ((1 - error) * 100))
+    print clf.coef_
+    rem4, = clf.coef_
+    return predict
+
+models = {}
+models['LogisticRegression'] = LogisticRegression()
+
+first_row = []
+
+rem = np.zeros_like(y_test)
+num_models = 0
+for k, v in models.iteritems():
+    print '\nmodel: ' + k
+    first_row.append(k)
+    rem += apply_model(v)
+    num_models += 1
+
+rem /= num_models
+rem = (rem > 0.5).astype(np.int)
+
+error = np.mean(np.square(rem - y_test))
+print '\nmodel: Ensemble'
+print '%.2f%%' % ((1 - error) * 100)
+
+first_row.append('Ensemble')
+second_row.append('%.2f%%' % ((1 - error) * 100))
+
+print '\n\n'
+print input_vars
+print rem4
+
+dict = {}
+
+for i in range(len(input_vars)):
+    dict[input_vars[i]] = rem4[i]
+
+import operator
+
+sorted_x = sorted(dict.items(), key=operator.itemgetter(1))
+
+print '\n\n' + predict_col
+# with open('betas/' + predict_col+'-betas-normalized.csv', 'wb') as csvfile:
+#     spamwriter = csv.writer(csvfile, delimiter=',',
+#                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
+#     for k in sorted_x[::-1]:
+#         spamwriter.writerow([k[0], k[1]])
